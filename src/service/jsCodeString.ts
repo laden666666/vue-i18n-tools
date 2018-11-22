@@ -9,6 +9,8 @@ let checkLanguageMap: {[languageName: string]: (strubg)=> boolean} = {
     }
 }
 
+const markString = "-|||{}|||-"
+
 export default {
     
     /**
