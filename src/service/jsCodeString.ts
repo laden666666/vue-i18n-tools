@@ -9,7 +9,8 @@ let checkLanguageMap: {[languageName: string]: (strubg)=> boolean} = {
     }
 }
 
-const markString = "-|||{}|||-"
+// 标记的符号
+const markString: [string, string] = ['-||', '||-']
 
 export default {
     
@@ -25,11 +26,47 @@ export default {
         }
         return checkLanguageMap[language](stringCode)
     },
+
+    /**
+     * 从js代码中提取指定语言字符串
+     * @param {string} jsCode 
+     * @param {string} [language='Chinese'] 
+     * @returns {ExtractJSStringResult} 
+     */
     extractStringFromJS(jsCode: string, language: string = 'Chinese'): ExtractJSStringResult{
-        return {
-            result: jsCode,
-            markString: '1',
+
+        // 提取字符串后的文本
+        let result = {
+            result: '',
+            markString: markString,
             extractString: []
         }
+        let isStringInside = false
+        let stringBeginChart = null
+        let extractingString = ''
+        for(let i = 0; i < jsCode.length; i++){
+            if(!isStringInside){
+                if('\'' === jsCode[i] || '"' === jsCode[i] || '`' === jsCode[i]){
+                    isStringInside = true
+                    stringBeginChart = jsCode[i]
+                    extractingString = ''
+                } else {
+                    result.result += jsCode[i]
+                }
+            } else{
+                if('`' === stringBeginChart){
+
+                } else if(stringBeginChart === jsCode[i] && '\\' !== jsCode[i - 1]){
+                    result.result += result.markString[0] + result.extractString.length + result.markString[1]
+                    result.extractString.push(eval(stringBeginChart + extractingString + stringBeginChart))
+                    isStringInside = false
+                    stringBeginChart = null
+                } else {
+                    extractingString += jsCode[i]
+                }
+            }
+        }
+
+        return result
     }
 }
