@@ -8,6 +8,8 @@ export interface ExtractJSStringResult{
     result: string,
     // 提取后的标记
     markString: [string, string],
+    // 字符串插值的标记
+    interpolationMark: [string, string],
     // 提取的结果
     extractString: string[]
 }

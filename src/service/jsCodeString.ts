@@ -11,6 +11,103 @@ let checkLanguageMap: {[languageName: string]: (strubg)=> boolean} = {
 
 // 标记的符号
 const markString: [string, string] = ['-||', '||-']
+// 标记的符号
+const interpolationMark: [string, string] = ['%||', '||%']
+
+/**
+ * 从js代码中扫描字符串
+ * @param {string} jsCode 
+ * @param {number} startIndex 
+ * @param {string} processedString 
+ * @param {string[]} scanStringList 
+ * @returns {string} 
+ */
+function scanStringFromJSCode(jsCode: string, startIndex: number, processedString: string, scanStringList: string[]): {
+    endIndex: number,
+    result: string,
+}{
+    // 提取字符串后的文本
+    let result = processedString
+
+    for(let i = startIndex; i < jsCode.length; i++){
+        // 如果当前索引未在字符串内部，检测出字符串的开始字符，
+        if('\'' === jsCode[i] || '"' === jsCode[i] || '`' === jsCode[i]) {
+            let _result = extractString(jsCode, i, result, scanStringList)
+            result = _result.result
+            i = _result.endIndex
+        } else if('}' === jsCode[i]) {
+            result += interpolationMark[1]
+            return {
+                result,
+                endIndex: i
+            }
+        } else {
+            // 未进入字符串收集字符串
+            result += jsCode[i]
+        }
+    }
+
+    return {
+        result,
+        endIndex: jsCode.length - 1
+    }
+}
+
+/**
+ * 从js代码中提取字符串
+ * @param {string} jsCode           js代码
+ * @param {number} startIndex       提取字符串的开始位置
+ * @returns {{
+ *     endIndex: number,
+ *     result: string
+ * }} 
+ */
+function extractString(jsCode: string, startIndex: number, processedString: string, scanStringList: string[]): {
+    endIndex: number,
+    result: string,
+}{
+    if('\'' !== jsCode[startIndex] && '"' !== jsCode[startIndex] && '`' !== jsCode[startIndex]) {
+        throw new Error('')
+    }
+
+    // 如果当前索引在字符串内部，则定义字符串的字符是什么（' " `中的一个）
+    let stringBeginChar = jsCode[startIndex]
+    // 如果当前索引在字符串内部，则已经收集的字符串文本
+    let extractingString = ''
+    // 检索的索引
+    let i: number
+    let scanStringListLength = scanStringList.length
+    let hasSubStringCount = 0
+
+    processedString += markString[0] + scanStringListLength
+    scanStringList.push('')
+    for(i = startIndex + 1; i < jsCode.length; i++){
+
+        // 当索引已经进入字符串中时候，检查字符串结束字符
+        if('`' === stringBeginChar && '$' === jsCode[i] && '{' === jsCode[i + 1 ] 
+            && ('\\' !== jsCode[i - 1] || '\\' === jsCode[i - 1] && '\\' === jsCode[i - 2])){
+            // 如果是es6的模板字符串，要求先检查是否存在$，如果存在递归查找所有字符串
+            let _result = scanStringFromJSCode(jsCode, i + 2, processedString + interpolationMark[0], scanStringList)
+            i = _result.endIndex
+            processedString = _result.result
+            extractingString += '{' + hasSubStringCount + '}' 
+            hasSubStringCount++
+        } else if(stringBeginChar === jsCode[i]
+            && ('\\' !== jsCode[i - 1] || '\\' === jsCode[i - 1] && '\\' === jsCode[i - 2])){
+
+            processedString += hasSubStringCount ? scanStringListLength + markString[1] : markString[1]
+            scanStringList[scanStringListLength] = eval(stringBeginChar + extractingString + stringBeginChar)
+            
+            return {
+                result: processedString,
+                endIndex: i
+            }
+        } else {
+            extractingString += jsCode[i]
+        }
+    }
+}
+
 
 export default {
     
@@ -35,38 +132,14 @@ export default {
      */
     extractStringFromJS(jsCode: string, language: string = 'Chinese'): ExtractJSStringResult{
 
-        // 提取字符串后的文本
-        let result = {
-            result: '',
+        let extractString = []
+        let resultString = scanStringFromJSCode(jsCode, 0, '', extractString)
+
+        return {
+            result: resultString.result,
             markString: markString,
-            extractString: []
+            interpolationMark: interpolationMark,
+            extractString,
         }
-        let isStringInside = false
-        let stringBeginChart = null
-        let extractingString = ''
-        for(let i = 0; i < jsCode.length; i++){
-            if(!isStringInside){
-                if('\'' === jsCode[i] || '"' === jsCode[i] || '`' === jsCode[i]){
-                    isStringInside = true
-                    stringBeginChart = jsCode[i]
-                    extractingString = ''
-                } else {
-                    result.result += jsCode[i]
-                }
-            } else{
-                if('`' === stringBeginChart){
-
-                } else if(stringBeginChart === jsCode[i] && '\\' !== jsCode[i - 1]){
-                    result.result += result.markString[0] + result.extractString.length + result.markString[1]
-                    result.extractString.push(eval(stringBeginChart + extractingString + stringBeginChart))
-                    isStringInside = false
-                    stringBeginChart = null
-                } else {
-                    extractingString += jsCode[i]
-                }
-            }
-        }
-
-        return result
     }
 }
