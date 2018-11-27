@@ -1,4 +1,5 @@
 import { ExtractJSStringResult } from '../model/ExtractJSStringResult';
+
 // 注册的检测文本语言的函数map，用于检测指定文本是否是使用了指定语言的字符
 let checkLanguageMap: {[languageName: string]: (strubg)=> boolean} = {
     Chinese: (stringCode)=>{
@@ -22,25 +23,69 @@ const interpolationMark: [string, string] = ['%||', '||%']
  * @param {string[]} scanStringList 
  * @returns {string} 
  */
-function scanStringFromJSCode(jsCode: string, startIndex: number, processedString: string, scanStringList: string[]): {
+
+/**
+ * 从js代码中提取字符串
+ * @param {string} jsCode                   js原始代码
+ * @param {number} startIndex               已经处理到的位置
+ * @param {string} processedString          已经处理过的js代码，处理到startIndex的位置
+ * @param {string[]} scanStringList         已经提取出的js字符串的数组
+ * @returns {{
+ *     endIndex: number,
+ *     result: string,
+ * }} 
+ */
+function scanStringFromJSCode(jsCode: string, startIndex: number, processedString: string, scanStringList: string[], insideString = false): {
     endIndex: number,
     result: string,
 }{
-    // 提取字符串后的文本
+    // 处理中的字符串
     let result = processedString
 
+    // 出现的“{”和“}”次数
+    let braceCount = 0
+
+    // 正则和注释暂不支持
     for(let i = startIndex; i < jsCode.length; i++){
         // 如果当前索引未在字符串内部，检测出字符串的开始字符，
         if('\'' === jsCode[i] || '"' === jsCode[i] || '`' === jsCode[i]) {
+            // 调用抽取字符串函数，将字符串抽取出来
             let _result = extractString(jsCode, i, result, scanStringList)
             result = _result.result
             i = _result.endIndex
         } else if('}' === jsCode[i]) {
-            result += interpolationMark[1]
-            return {
-                result,
-                endIndex: i
+            braceCount--
+            if(braceCount < 0){
+                if(insideString){
+                    result += interpolationMark[1]
+                    return {
+                        result,
+                        endIndex: i
+                    }
+                } else {
+                    braceCount = 0
+                }
             }
+        } else if('{' === jsCode[i]) {
+            braceCount++
+        } else if('/' === jsCode[i] && '/' === jsCode[i + 1]) {
+            let exp = /^(\/\/.*(\n|$))/g
+            if(exp.test(jsCode.substr(i))){
+                let str = exp.exec(jsCode.substr(i))[1]
+
+                result += str
+                i += str.length
+            }
+        } else if('/' === jsCode[i] && '*' === jsCode[i + 1]) {
+            let exp = /^(\/\*.*\*\/)/g
+            if(exp.test(jsCode.substr(i))){
+                let str = exp.exec(jsCode.substr(i))[1]
+
+                result += str
+                i += str.length
+            }
+        }else if('{' === jsCode[i]) {
+            braceCount++
         } else {
             // 未进入字符串收集字符串
             result += jsCode[i]
@@ -87,7 +132,7 @@ function extractString(jsCode: string, startIndex: number, processedString: stri
         if('`' === stringBeginChar && '$' === jsCode[i] && '{' === jsCode[i + 1 ] 
             && ('\\' !== jsCode[i - 1] || '\\' === jsCode[i - 1] && '\\' === jsCode[i - 2])){
             // 如果是es6的模板字符串，要求先检查是否存在$，如果存在递归查找所有字符串
-            let _result = scanStringFromJSCode(jsCode, i + 2, processedString + interpolationMark[0], scanStringList)
+            let _result = scanStringFromJSCode(jsCode, i + 2, processedString + interpolationMark[0], scanStringList, true)
             i = _result.endIndex
             processedString = _result.result
             extractingString += '{' + hasSubStringCount + '}' 
