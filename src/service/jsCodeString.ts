@@ -69,7 +69,8 @@ function scanStringFromJSCode(jsCode: string, startIndex: number, processedStrin
         } else if('{' === jsCode[i]) {
             braceCount++
         } else if('/' === jsCode[i] && '/' === jsCode[i + 1]) {
-            let exp = /^(\/\/.*(\n|$))/g
+            // 处理//注释
+            let exp = /^(\/\/.*(\n|$))/
             if(exp.test(jsCode.substr(i))){
                 let str = exp.exec(jsCode.substr(i))[1]
 
@@ -77,14 +78,31 @@ function scanStringFromJSCode(jsCode: string, startIndex: number, processedStrin
                 i += str.length
             }
         } else if('/' === jsCode[i] && '*' === jsCode[i + 1]) {
-            let exp = /^(\/\*.*\*\/)/g
+            // 处理 /* */注释
+            let exp = /^(\/\*.*\*\/)/
             if(exp.test(jsCode.substr(i))){
                 let str = exp.exec(jsCode.substr(i))[1]
 
                 result += str
-                i += str.length
+                i += str.length - 1
             }
-        }else if('{' === jsCode[i]) {
+        } else if('/' === jsCode[i] && '*' === jsCode[i + 1]) {
+            // 检查正在表达式字面量，因为正则字面量和除号都是以“/”开头，因此需要排除除号。
+            // 除号前面一般是一个字面量、变量、表达式，不容易匹配，因此暂不支持
+            /*
+            var g, test = 1+/1+`test`+1/g
+            var g, test = 1/1+`test`+1/g
+            */
+            // 目前这种字符串抽取方法，很难判断出上述两个test是否需要提取。
+            // 因为无法判断，所以暂时忽略正则表达式情况。后续可以考虑合适的js编译工具帮助解决上述情况
+            let exp = /^(\/\*.*\*\/)/
+            if(exp.test(jsCode.substr(i))){
+                let str = exp.exec(jsCode.substr(i))[1]
+
+                result += str
+                i += str.length - 1
+            }
+        } else if ('{' === jsCode[i]) {
             braceCount++
         } else {
             // 未进入字符串收集字符串
