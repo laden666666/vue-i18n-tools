@@ -135,9 +135,9 @@ function extractStringFromBabelAST(ast: any, stringList: StringASTType[], filter
                 ast.expressions.forEach(item=> extractStringFromBabelAST(item, stringList, filter))
             }
         } else {
-            // let _ast: TemplateLiteral = ast
-            if(filter(ast.quasis[0])){
-                stringList.push(ast.quasis[0])
+            let _ast: TemplateLiteral = ast
+            if(filter(_ast.quasis[0].value.cooked)){
+                stringList.push(_ast.quasis[0] as any)
             }
         }
     } else if(Array.isArray(ast)){

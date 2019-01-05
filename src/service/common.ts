@@ -1,7 +1,7 @@
 // 标记的符号
 export const markString: [string, string] = ['-||', '||-']
 // 标记的符号
-export const interpolationMark: [string, string] = ['%||', '||%']
+export const interpolationMark: [string, string] = ['%$$', '$$%']
 
 /**
  * 提取js字符串的结构

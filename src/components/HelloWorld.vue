@@ -130,6 +130,7 @@
 <script>
 import axios from 'axios'
 import vueCodeString from '../service/vueCodeString.ts'
+import {markString, interpolationMark} from '../service/common'
 function getKeyName(...str){
     str = str.filter(str=>str).reduce((arr, name)=>{
         return [...arr, ...(name.trim().split(/\s+/g))]
@@ -154,14 +155,22 @@ export default {
             if(!this.replaceCode){
                 return ''
             }
-            return this.findWordArr.reduce((replaceCode, findWord, index)=>{
+            let code = this.findWordArr.reduce((replaceCode, findWord, index)=>{
                 if(!findWord.used){
-                    return replaceCode.replace('-||' + findWord.index + '||-', findWord.originalCode)
+                    if(replaceCode.indexOf(`${markString[0]}${findWord.index}${interpolationMark[0]}`) > -1){
+                        let start = replaceCode.indexOf(`${markString[0]}${findWord.index}${interpolationMark[0]}`),
+                        end = replaceCode.indexOf(`${interpolationMark[1]}${findWord.index}${markString[1]}`) + `${markString[1]}${findWord.index}${interpolationMark[1]}`.length
+                    
+                        return replaceCode.substr(0, start) + findWord.originalCode + replaceCode.substr(end)
+                    } else {
+                        return replaceCode.replace(markString[0] + findWord.index + markString[1], findWord.originalCode)
+                    }
                 }
-                return replaceCode.replace('-||' + findWord.index + '||-', findWord
-                    .replaceCode.replace('|' + findWord.index + '|', '|' + index + '|'))
+                return replaceCode
                     
             },this.replaceCode)
+
+            return code
         },
         replaceDisable(){
             return this.findWordArr.reduce((bool, findWord)=>bool && (!findWord.used || findWord.key), true)
@@ -180,7 +189,10 @@ export default {
                 }
                 let html = this.$refs.html.innerHTML
                 html = this.findWordArr.reduce((html, word, index)=>{
-                    return html.replace(`|${index}|`, `<span class="heightlight">|${index}|</span>`)
+                    return html.replace(`${markString[0]}${index}${markString[1]}`, `<span class="heightlight">${markString[0]}${index}${markString[1]}</span>`)
+                        .replace(`${markString[0]}${index}${interpolationMark[0]}`, `<span class="heightlight">${markString[0]}${index}${interpolationMark[0]}</span>`)
+                        .replace(`${interpolationMark[1]}${index}${interpolationMark[0]}`, `<span class="heightlight">${interpolationMark[1]}${index}${interpolationMark[0]}</span>`)
+                        .replace(`${interpolationMark[1]}${index}${markString[1]}`, `<span class="heightlight">${interpolationMark[1]}${index}${markString[1]}</span>`)
                 }, html)
 
                 this.$refs.result.innerHTML = html
@@ -274,8 +286,7 @@ export default {
             let result = vueCodeString.extractStringFromVue(this.code, {
                 filter: hit
             })
-            console.log(result)
-
+            window.result = result
             this.replaceCode = result.result
             this.findWordArr = result.extractString.map(item=>{
                 return {
@@ -290,7 +301,7 @@ export default {
             this.resultCode = this.findWordArr.reduce((replaceCode, word, index)=>{
                 
                 if(!word.used){
-                    return replaceCode.replace('||' + word.index + '||', word.originalCode)
+                    return replaceCode.replace(markString[0] + word.index + markString[1], word.originalCode)
                 } else {
                     let key = getKeyName(this.pageName || '', word.key)
 
@@ -356,5 +367,9 @@ export default {
         },
     }
 }
+
+
+console.log('测试1')
+console.log(`测${ `测${1}试3` }试${ `测试4` }2`)
 </script>
 

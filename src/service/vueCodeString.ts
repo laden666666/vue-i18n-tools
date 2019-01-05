@@ -88,17 +88,18 @@ export default {
                                 // 如果是用普通变量名开头，表示是非绑定字段，使用“:”重新绑定
 
                                 let quotationMarks = item.quotationMarks == '"' ? "'" : '"'
+                                let replaceCode = `${markString[0]}${extractStrings.length}${markString[1]}`
                                 let extractString: ExtractString = {
                                     index: extractStrings.length,
                                     originalCode: item.code.trim(),
-                                    replaceCode: `:${item.name}=${quotationMarks}${markString[0]}${extractStrings.length}${markString[1]}${quotationMarks}`,
+                                    replaceCode: `:${item.name}=${quotationMarks}${replaceCode}${quotationMarks}`,
                                     word: item.value,
                                     type: 1,
                                 }
 
                                 extractStrings.push(extractString)
-                                jsCode = jsCode.substr(0, item.start + changeLength) + item.code.split(item.name[0])[0] + extractString.replaceCode + jsCode.substr(item.end + changeLength)
-                                changeLength += extractString.replaceCode.length - extractString.originalCode.length 
+                                jsCode = jsCode.substr(0, item.start + changeLength) + item.code.split(item.name[0])[0] + replaceCode + jsCode.substr(item.end + changeLength)
+                                changeLength += replaceCode.length - extractString.originalCode.length 
                             }
                             // 非vue相关属性，工具不做处理
                         }
@@ -164,17 +165,19 @@ export default {
                         }
 
                         if(filter(code)){
+                            let replaceCode = `${markString[0]}${extractStrings.length}${markString[1]}`
+
                             let extractString: ExtractString = {
                                 index: extractStrings.length,
                                 originalCode: code,
-                                replaceCode: `{{${markString[0]}${extractStrings.length}${markString[1]}}}`,
+                                replaceCode: `{{${replaceCode}}}`,
                                 word: code,
                                 type: 2,
                             }
     
                             extractStrings.push(extractString)
-                            jsCode = jsCode.substr(0, _start + changeLength) + extractString.replaceCode + jsCode.substr(_start + code.length + changeLength)
-                            changeLength += extractString.replaceCode.length - extractString.originalCode.length
+                            jsCode = jsCode.substr(0, _start + changeLength) + replaceCode + jsCode.substr(_start + code.length + changeLength)
+                            changeLength += replaceCode.length - extractString.originalCode.length
                             _start = _start + code.length
                         }
                         

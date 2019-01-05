@@ -63,32 +63,40 @@ var str = '鼎折\\'覆餗'`, {filter: str=>str == `鼎折'覆餗`})
         assert.deepEqual(result.extractString.map(item=> item.originalCode), [`\`嘻嘻\\\${1}嘻\``])
         
         result = jsCodeString.extractStringFromJS(`var str = \`嘻嘻\${1}嘻\``)
-        assert.equal(result.result, 'var str = -||0%||1||%0||-')
+        assert.equal(result.result, `var str = ${result.markString[0]}0${result.interpolationMark[0]}1${result.interpolationMark[1]}0${result.markString[1]}`)
         assert.deepEqual(result.extractString.map(item=> item.word), ['嘻嘻{0}嘻'])
         assert.deepEqual(result.extractString.map(item=> item.originalCode), [`\`嘻嘻\${1}嘻\``])
 
         result = jsCodeString.extractStringFromJS(`var str = \`嘻\${0}嘻\${1}嘻\``)
-        assert.equal(result.result, 'var str = -||0%||0||%0%||1||%0||-')
+        assert.equal(result.result, `var str = ${result.markString[0]}0${result.interpolationMark[0]}0${result.interpolationMark[1]}0${result.interpolationMark[0]}1${result.interpolationMark[1]}0${result.markString[1]}`)
         assert.deepEqual(result.extractString.map(item=> item.word), ['嘻{0}嘻{1}嘻'])
         assert.deepEqual(result.extractString.map(item=> item.originalCode), [`\`嘻\${0}嘻\${1}嘻\``])
+
+        result = jsCodeString.extractStringFromJS(`var str = \`嘻\${0}嘻\${1}嘻\${2}嘻\``)
+        assert.equal(result.result, `var str = ${result.markString[0]}0${result.interpolationMark[0]}0${result.interpolationMark[1]}0${result.interpolationMark[0]}1${result.interpolationMark[1]}0${result.interpolationMark[0]}2${result.interpolationMark[1]}0${result.markString[1]}`)
+        assert.deepEqual(result.extractString.map(item=> item.word), ['嘻{0}嘻{1}嘻{2}嘻'])
+        assert.deepEqual(result.extractString.map(item=> item.originalCode), [`\`嘻\${0}嘻\${1}嘻\${2}嘻\``])
         
         result = jsCodeString.extractStringFromJS('var str = `嘻嘻${ "水电费" + `放到${2 + 1}地方` }嘻`')
-        assert.equal(result.result, 'var str = -||0%|| -||1||- + -||2%||2 + 1||%2||- ||%0||-')
+        assert.equal(result.result, `var str = ${result.markString[0]}0${result.interpolationMark[0]} ${result.markString[0]}1${result.markString[1]} + ${result.markString[0]}2${result.interpolationMark[0]}2 + 1${result.interpolationMark[1]}2${result.markString[1]} ${result.interpolationMark[1]}0${result.markString[1]}`)
         assert.deepEqual(result.extractString.map(item=> item.word), ['嘻嘻{0}嘻', '水电费', '放到{0}地方'])
         assert.deepEqual(result.extractString.map(item=> item.originalCode), [
-            '`嘻嘻${ -||1||- + -||2%||2 + 1||%2||- }嘻`',
+            `\`嘻嘻\${ ${result.markString[0]}1${result.markString[1]} + ${result.markString[0]}2${result.interpolationMark[0]}2 + 1${result.interpolationMark[1]}2${result.markString[1]} }嘻\``,
             '"水电费"',
             '`放到${2 + 1}地方`',
         ])
         
         result = jsCodeString.extractStringFromJS('var str = `嘻嘻${ "水电费" + `放到${2 + 1}地方` }嘻${1}`')
-        assert.equal(result.result, 'var str = -||0%|| -||1||- + -||2%||2 + 1||%2||- ||%0%||1||%0||-')
+        assert.equal(result.result, `var str = ${result.markString[0]}0${result.interpolationMark[0]} ${result.markString[0]}1${result.markString[1]} + ${result.markString[0]}2${result.interpolationMark[0]}2 + 1${result.interpolationMark[1]}2${result.markString[1]} ${result.interpolationMark[1]}0${result.interpolationMark[0]}1${result.interpolationMark[1]}0${result.markString[1]}`)
         assert.deepEqual(result.extractString.map(item=> item.word), ['嘻嘻{0}嘻{1}', '水电费', '放到{0}地方'])
         assert.deepEqual(result.extractString.map(item=> item.originalCode), [
-            '`嘻嘻${ -||1||- + -||2%||2 + 1||%2||- }嘻${1}`',
+            `\`嘻嘻\${ ${result.markString[0]}1${result.markString[1]} + ${result.markString[0]}2${result.interpolationMark[0]}2 + 1${result.interpolationMark[1]}2${result.markString[1]} }嘻\${1}\``,
             '"水电费"',
             '`放到${2 + 1}地方`',
         ])
+
+        result = jsCodeString.extractStringFromJS('`${`测${ `测${1}试3` }试${ `测试4` }2`}`')
+        assert.equal(result.result, `${result.markString[0]}0${result.interpolationMark[0]}${result.markString[0]}1${result.interpolationMark[0]} ${result.markString[0]}2${result.interpolationMark[0]}1${result.interpolationMark[1]}2${result.markString[1]} ${result.interpolationMark[1]}1${result.interpolationMark[0]} ${result.markString[0]}3${result.markString[1]} ${result.interpolationMark[1]}1${result.markString[1]}${result.interpolationMark[1]}0${result.markString[1]}`)
     })
 
     it('有filter的从js代码中提取模板字符串', ()=>{
@@ -103,26 +111,31 @@ var str = '鼎折\\'覆餗'`, {filter: str=>str == `鼎折'覆餗`})
         result = jsCodeString.extractStringFromJS('var str = `嘻嘻${ "水电费" + `放到${2 + 1}地方` }嘻`', {
             filter: str=> str.indexOf('嘻') > -1
         })
-        assert.equal(result.result, 'var str = -||0%|| "水电费" + `放到${2 + 1}地方` ||%0||-')
+        assert.equal(result.result, `var str = ${result.markString[0]}0${result.interpolationMark[0]} "水电费" + \`放到\${2 + 1}地方\` ${result.interpolationMark[1]}0${result.markString[1]}`)
         assert.deepEqual(result.extractString.map(item=> item.word), ['嘻嘻{0}嘻'])
         
         result = jsCodeString.extractStringFromJS('var str = `嘻嘻${ "水电费" + `放到${2 + 1}地方` }嘻`', {
             filter: str=> str.indexOf('嘻') === -1
         })
-        assert.equal(result.result, 'var str = `嘻嘻${ -||0||- + -||1%||2 + 1||%1||- }嘻`')
+        assert.equal(result.result, `var str = \`嘻嘻\${ ${result.markString[0]}0${result.markString[1]} + ${result.markString[0]}1${result.interpolationMark[0]}2 + 1${result.interpolationMark[1]}1${result.markString[1]} }嘻\``)
         assert.deepEqual(result.extractString.map(item=> item.word), ['水电费', '放到{0}地方'])
         
         result = jsCodeString.extractStringFromJS('var str = `嘻嘻${ "水电费" + `放到${2 + 1}地方` }嘻`', {
             filter: str=> str != '水电费'
         })
-        assert.equal(result.result, 'var str = -||0%|| "水电费" + -||1%||2 + 1||%1||- ||%0||-')
+        assert.equal(result.result, `var str = ${result.markString[0]}0${result.interpolationMark[0]} "水电费" + ${result.markString[0]}1${result.interpolationMark[0]}2 + 1${result.interpolationMark[1]}1${result.markString[1]} ${result.interpolationMark[1]}0${result.markString[1]}`)
         assert.deepEqual(result.extractString.map(item=> item.word), ['嘻嘻{0}嘻', '放到{0}地方'])
         
         result = jsCodeString.extractStringFromJS('var str = `大大${ "水电费" + `放到${2 + 1}地方` }嘻${1}`', {
             filter: str=> str.indexOf('嘻') > -1
         })
-        assert.equal(result.result, 'var str = -||0%|| "水电费" + `放到${2 + 1}地方` ||%0%||1||%0||-')
+        assert.equal(result.result, `var str = ${result.markString[0]}0${result.interpolationMark[0]} "水电费" + \`放到\${2 + 1}地方\` ${result.interpolationMark[1]}0${result.interpolationMark[0]}1${result.interpolationMark[1]}0${result.markString[1]}`)
         assert.deepEqual(result.extractString.map(item=> item.word), ['大大{0}嘻{1}'])
+
+        result = jsCodeString.extractStringFromJS('`${`测${ `测${1}试3` }试${ `测试4` }2`}`', {
+            filter: str=> /[\u4e00-\u9fa5]/.test(str)
+        })
+        assert.equal(result.result, `\`\${${result.markString[0]}0${result.interpolationMark[0]} ${result.markString[0]}1${result.interpolationMark[0]}1${result.interpolationMark[1]}1${result.markString[1]} ${result.interpolationMark[1]}0${result.interpolationMark[0]} ${result.markString[0]}2${result.markString[1]} ${result.interpolationMark[1]}0${result.markString[1]}}\``)
     })
 
 

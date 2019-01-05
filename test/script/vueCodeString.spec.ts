@@ -287,7 +287,7 @@ describe('测试VueCodeString', ()=>{
     it('vue的属性测试', ()=>{
         let result = vueCodeString.extractStringFromVue(
             `<template><div id="te'st"></div></template>`)
-        assert.equal(result.result, `<template><div :id='${result.markString[0]}0${result.markString[1]}'></div></template>`)
+        assert.equal(result.result, `<template><div ${result.markString[0]}0${result.markString[1]}></div></template>`)
         assert.deepEqual(result.extractString, [{
             "index": 0,
             "originalCode": 'id="te\'st"',
@@ -298,7 +298,7 @@ describe('测试VueCodeString', ()=>{
 
         result = vueCodeString.extractStringFromVue(
             `<template><div id="test"><a id='test'></a></div></template>`)
-        assert.equal(result.result, `<template><div :id='${result.markString[0]}0${result.markString[1]}'><a :id="${result.markString[0]}1${result.markString[1]}"></a></div></template>`)
+        assert.equal(result.result, `<template><div ${result.markString[0]}0${result.markString[1]}><a ${result.markString[0]}1${result.markString[1]}></a></div></template>`)
         assert.deepEqual(result.extractString, [{
             "index": 0,
             "originalCode": 'id="test"',
@@ -317,7 +317,7 @@ describe('测试VueCodeString', ()=>{
     it('vue的普通文本', ()=>{
         let result = vueCodeString.extractStringFromVue(
             `<template><div>test</div></template>`)
-        assert.equal(result.result, `<template><div>{{${result.markString[0]}0${result.markString[1]}}}</div></template>`)
+        assert.equal(result.result, `<template><div>${result.markString[0]}0${result.markString[1]}</div></template>`)
         assert.deepEqual(result.extractString, [{
             "index": 0,
             "originalCode": 'test',
@@ -328,7 +328,7 @@ describe('测试VueCodeString', ()=>{
 
         result = vueCodeString.extractStringFromVue(
             `<template><div>test{{test</div></template>`)
-        assert.equal(result.result, `<template><div>{{${result.markString[0]}0${result.markString[1]}}}</div></template>`)
+        assert.equal(result.result, `<template><div>${result.markString[0]}0${result.markString[1]}</div></template>`)
         assert.deepEqual(result.extractString, [{
             "index": 0,
             "originalCode": 'test{{test',
@@ -352,7 +352,7 @@ describe('测试VueCodeString', ()=>{
 
         result = vueCodeString.extractStringFromVue(
             `<template><div>test{{test + 'test'}}</div></template>`)
-        assert.equal(result.result, `<template><div>{{${result.markString[0]}0${result.markString[1]}}}{{test + ${result.markString[0]}1${result.markString[1]}}}</div></template>`)
+        assert.equal(result.result, `<template><div>${result.markString[0]}0${result.markString[1]}{{test + ${result.markString[0]}1${result.markString[1]}}}</div></template>`)
         assert.deepEqual(result.extractString, [{
             "index": 0,
             "originalCode": 'test',
@@ -369,8 +369,8 @@ describe('测试VueCodeString', ()=>{
 
         result = vueCodeString.extractStringFromVue(
             `<template><div>test{{test + 'test'}}{{test</div></template>`)
-        assert.equal(result.result, `<template><div>{{${result.markString[0]}0${result.markString[1]}}}`
-            + `{{test + ${result.markString[0]}1${result.markString[1]}}}{{${result.markString[0]}2${result.markString[1]}}}</div></template>`)
+        assert.equal(result.result, `<template><div>${result.markString[0]}0${result.markString[1]}`
+            + `{{test + ${result.markString[0]}1${result.markString[1]}}}${result.markString[0]}2${result.markString[1]}</div></template>`)
         assert.deepEqual(result.extractString, [{
             "index": 0,
             "originalCode": 'test',
@@ -393,8 +393,8 @@ describe('测试VueCodeString', ()=>{
 
         result = vueCodeString.extractStringFromVue(
             `<template><div>test{{test + 'test'}}xx{{test</div></template>`)
-        assert.equal(result.result, `<template><div>{{${result.markString[0]}0${result.markString[1]}}}`
-            + `{{test + ${result.markString[0]}1${result.markString[1]}}}{{${result.markString[0]}2${result.markString[1]}}}</div></template>`)
+        assert.equal(result.result, `<template><div>${result.markString[0]}0${result.markString[1]}`
+            + `{{test + ${result.markString[0]}1${result.markString[1]}}}${result.markString[0]}2${result.markString[1]}</div></template>`)
         assert.deepEqual(result.extractString, [{
             "index": 0,
             "originalCode": 'test',
