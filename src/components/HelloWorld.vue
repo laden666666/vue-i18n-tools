@@ -1,6 +1,6 @@
 <template>
     <div class="main">
-        <Input v-model="pageName">
+        <Input v-model='pageName'>
             <span slot="prepend">页面namespace</span>
         </Input>
         <template v-if="keyCode">
@@ -65,7 +65,6 @@
                 <Button type="primary" @click="analyse" long>寻找中文字符</Button>
             </div>
         </template>
-
     </div>
 </template>
 <style scoped>
@@ -101,6 +100,7 @@
         border: 1px solid #dcdee2;
         border-radius: 5px;
         overflow: auto;
+        text-align: left;
     }
     .word-list{
         list-style: none;
@@ -129,8 +129,8 @@
 </style>
 <script>
 import axios from 'axios'
+import vueCodeString from '../service/vueCodeString.ts'
 function getKeyName(...str){
-    console.log(str)
     str = str.filter(str=>str).reduce((arr, name)=>{
         return [...arr, ...(name.trim().split(/\s+/g))]
     }, [])
@@ -156,9 +156,9 @@ export default {
             }
             return this.findWordArr.reduce((replaceCode, findWord, index)=>{
                 if(!findWord.used){
-                    return replaceCode.replace('||' + findWord.index + '||', findWord.originalCode)
+                    return replaceCode.replace('-||' + findWord.index + '||-', findWord.originalCode)
                 }
-                return replaceCode.replace('||' + findWord.index + '||', findWord
+                return replaceCode.replace('-||' + findWord.index + '||-', findWord
                     .replaceCode.replace('|' + findWord.index + '|', '|' + index + '|'))
                     
             },this.replaceCode)
@@ -175,6 +175,9 @@ export default {
         },
         showReplaceCode(){
             this.$nextTick(()=>{
+                if(!this.$refs.html){
+                    return
+                }
                 let html = this.$refs.html.innerHTML
                 html = this.findWordArr.reduce((html, word, index)=>{
                     return html.replace(`|${index}|`, `<span class="heightlight">|${index}|</span>`)
@@ -187,89 +190,100 @@ export default {
     methods: {
         analyse(){
             function hit(code){
-                return code && !~code.indexOf('|') && /[\u4e00-\u9fa5]/.test(code) && !~code.indexOf('<!--')
+                return /[\u4e00-\u9fa5]/.test(code)
             }
 
-            function pushWord(code, word, arr, fn){
-                if(!fn){
-                    fn = function(code, word, replace ){
-                        return code.replace(word, replace)
-                    }
-                }
-                let index = arr.length
-                arr.push({
-                    index,
-                    word,
-                    originalCode: code,
-                    key: '',
-                    replaceCode: fn(code, word, '|' + index + '|'),
+            // function pushWord(code, word, arr, fn){
+            //     if(!fn){
+            //         fn = function(code, word, replace ){
+            //             return code.replace(word, replace)
+            //         }
+            //     }
+            //     let index = arr.length
+            //     arr.push({
+            //         index,
+            //         word,
+            //         originalCode: code,
+            //         key: '',
+            //         replaceCode: fn(code, word, '|' + index + '|'),
+            //         used: true,
+            //     })
+            //     return '||' + index + '||'
+            // }
+            // var words = []
+            // let replaceCode = this.code
+            // // 普通属性（"）
+            // .replace(/(?::?|v-?|v-bind:?|v-on:?|@?)[\w-]+="([^"]*)"|(?::?|v-?|v-bind:?|v-on:?|@?)[\w-]+='([^']*)'/g, function(code, str, str2, index){
+            //     let word = str || str2
+            //     if(code[0] == ':' || code.substr(0, 2) == 'v-' || code[0] == '@' || !hit(word)){
+            //         return code
+            //     }
+
+            //     return pushWord(code, word, words, function(code, word, replace){
+            //         return ':' + code.replace(word, replace)
+            //     })
+            // }).replace(/(?:>|\}{2})[\s\n\r\t]*?([^><\{{2}\}{2}]+)[\s\n\r\t]*?(?:<|\{{2})/g, function(code, str){
+            //     if(!hit(str)){
+            //         return code
+            //     }
+            //     return pushWord(code, str.trim(), words, function(code, word, replace){
+            //         return code.replace(word, '{{' + replace + '}}')
+            //     })
+            // }).replace(/('[^"']*?')|("[^"']*?")/ig, function(code, str, str2){
+            //     let word = str || str2
+            //     word = word.substr(1, word.length - 2)
+
+            //     if(!hit(word)){
+            //         return code
+            //     }
+            //     return pushWord(code, word, words, function(cord, word, replace){
+            //         return code.replace(str || str2,  replace)
+            //     })
+            // }).replace(/(`[^`]*?`)/ig, function(code, word){
+            //     word = word.substr(1, word.length - 2)
+            //     if(!hit(word)){
+            //         return code
+            //     }
+            //     var i = 0
+            //     let word2 = word.replace(/\$\{.*?\}/g, ()=>{
+            //         return `{${i++}}`
+            //     })
+
+            //     return pushWord(code, word2, words, function(cord, word, replace){
+            //         return replace
+            //     })
+            // })
+
+            // // 排序
+            // let findFoundWordRep = /\|\|(\d+)\|\|/g
+            // let sortArr = []
+
+            // for(let find = findFoundWordRep.exec(replaceCode); find; find = findFoundWordRep.exec(replaceCode)){
+            //     sortArr.push(parseInt(find[1]))
+            // }
+
+            // let sortMap = sortArr.reduce((_map, i, index)=>{
+            //     _map[i] = index
+            //     return _map
+            // },{})
+
+            // words.sort((item1, item2)=>{
+            //     return sortMap[item1.index] > sortMap[item2.index] ? 1 : -1
+            // })
+
+            let result = vueCodeString.extractStringFromVue(this.code, {
+                filter: hit
+            })
+            console.log(result)
+
+            this.replaceCode = result.result
+            this.findWordArr = result.extractString.map(item=>{
+                return {
+                    ...item,
                     used: true,
-                })
-                return '||' + index + '||'
-            }
-            var words = []
-            let replaceCode = this.code
-            // 普通属性（"）
-            .replace(/(?::?|v-?|v-bind:?|v-on:?|@?)[\w-]+="([^"]*)"|(?::?|v-?|v-bind:?|v-on:?|@?)[\w-]+='([^']*)'/g, function(code, str, str2, index){
-                let word = str || str2
-                if(code[0] == ':' || code.substr(0, 2) == 'v-' || code[0] == '@' || !hit(word)){
-                    return code
+                    key: '',
                 }
-
-                return pushWord(code, word, words, function(code, word, replace){
-                    return ':' + code.replace(word, replace)
-                })
-            }).replace(/(?:>|\}{2})[\s\n\r\t]*?([^><\{{2}\}{2}]+)[\s\n\r\t]*?(?:<|\{{2})/g, function(code, str){
-                if(!hit(str)){
-                    return code
-                }
-                return pushWord(code, str.trim(), words, function(code, word, replace){
-                    return code.replace(word, '{{' + replace + '}}')
-                })
-            }).replace(/('[^"']*?')|("[^"']*?")/ig, function(code, str, str2){
-                let word = str || str2
-                word = word.substr(1, word.length - 2)
-
-                if(!hit(word)){
-                    return code
-                }
-                return pushWord(code, word, words, function(cord, word, replace){
-                    return code.replace(str || str2,  replace)
-                })
-            }).replace(/(`[^`]*?`)/ig, function(code, word){
-                word = word.substr(1, word.length - 2)
-                if(!hit(word)){
-                    return code
-                }
-                var i = 0
-                let word2 = word.replace(/\$\{.*?\}/g, ()=>{
-                    return `{${i++}}`
-                })
-
-                return pushWord(code, word2, words, function(cord, word, replace){
-                    return replace
-                })
             })
-
-            // 排序
-            let findFoundWordRep = /\|\|(\d+)\|\|/g
-            let sortArr = []
-
-            for(let find = findFoundWordRep.exec(replaceCode); find; find = findFoundWordRep.exec(replaceCode)){
-                sortArr.push(parseInt(find[1]))
-            }
-
-            let sortMap = sortArr.reduce((_map, i, index)=>{
-                _map[i] = index
-                return _map
-            },{})
-
-            words.sort((item1, item2)=>{
-                return sortMap[item1.index] > sortMap[item2.index] ? 1 : -1
-            })
-
-            this.replaceCode = replaceCode
-            this.findWordArr = words
         },
         replace(){
             let keyArr = []
