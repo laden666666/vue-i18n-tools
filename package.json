@@ -1,13 +1,14 @@
 {
-  "name": "i18n-helper",
+  "name": "vue-i18n-tools",
   "version": "1.0.0",
-  "description": "A Vue.js project",
-  "author": "DESKTOP-EKK8J81\\njz <njz198869@aliyun.com>",
+  "description": "一个vue的模板提取中文文本的工具，用于做国际化提取文本——vue-i18n-tools",
+  "author": "laden666666",
   "private": true,
   "scripts": {
     "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
     "start": "npm run dev",
     "test": "mocha --experimental-modules",
+    "doc": "docjsx c -p api md ./doc-jsx/README.jsx ./",
     "build": "node build/build.js"
   },
   "dependencies": {
@@ -46,6 +47,7 @@
     "karma-spec-reporter": "0.0.32",
     "karma-webpack": "^3.0.5",
     "mocha": "^5.1.1",
+    "my-doc-jsx": "^0.4.2",
     "node-notifier": "^5.1.2",
     "optimize-css-assets-webpack-plugin": "^3.2.0",
     "ora": "^1.2.0",

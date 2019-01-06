@@ -1,0 +1,50 @@
+<template>
+    <div class="main">
+        <Input v-model='pageName'>
+            <span slot="prepend">key的namespace</span>
+        </Input>
+        <template v-if="keyCode">
+            <Row  :gutter="16">
+                <Col span="12">
+<pre class="result">{{resultCode}}</pre>
+                </Col>
+                <Col span="12">
+<pre class="result">{
+    {{keyCode}}
+}</pre>
+                </Col>
+            </Row>
+                <Button long type="error" @click="goback(`你${'好'}`)">
+                    返回
+                </Button>
+            </Row>
+        </template>
+        
+    </div>
+</template>
+<style scoped>
+    .main{
+        padding: 10px;
+        width: calc(100vw - 20px);
+        height: 100vh;
+        box-sizing: border-box;
+        margin: 0 auto;
+    }
+</style>
+<script>
+import axios from 'axios'
+import vueCodeString from '../service/vueCodeString.ts'
+import {markString, interpolationMark} from '../service/common'
+function getKeyName(...str){
+    str = str.filter(str=>str).reduce((arr, name)=>{
+        return [...arr, ...(name.trim().split(/\s+/g))]
+    }, [])
+    return str.slice(0, 3).map(name=>name.toLowerCase()).join('_')
+}
+
+
+
+console.log('测试1')
+console.log(`测${ `测${1}试3` }试${ `测试4` }2`)
+</script>
+

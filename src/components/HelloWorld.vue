@@ -1,56 +1,56 @@
 <template>
     <div class="main">
-        <Input v-model='pageName'>
-            <span slot="prepend">页面namespace</span>
-        </Input>
         <template v-if="keyCode">
             <Row  :gutter="16">
                 <Col span="12">
-<pre class="result">{{resultCode}}</pre>
+<pre class="content" v-html="resultCode"></pre>
                 </Col>
                 <Col span="12">
-<pre class="result">{
+<pre class="content">{
     {{keyCode}}
 }</pre>
                 </Col>
             </Row>
-                <Button long type="error" @click="goback">
+                <Button long type="error" @click="goback2">
                     返回
                 </Button>
             </Row>
         </template>
         <template v-else-if="findWordArr.length > 0">
+            <Input v-model='pageName'>
+                <span slot="prepend">页面namespace</span>
+            </Input>
             <Row  :gutter="16">
                 <Col span="12">
-                <div style="display: none;" ref="html">{{showReplaceCode}}</div>
-<pre class="result" ref="result" key="result"></pre>
+<pre class="result" v-html="showReplaceCodeHTML" key="result"></pre>
                 </Col>
                 <Col span="12">
                     <ul class="word-list">
                         <li class="word-list-item" v-for="word in findWordArr" :key="word.index">
-                            <Checkbox v-model="word.used" >{{word.word}}</Checkbox>
+                            <Checkbox v-model="word.used" >{{word.index + 1}}. {{word.word}}</Checkbox>
                             <p class="word-list-item-key">
-                                <Input v-if="word.used" placeholder="请输入该国际化文本的key" v-model="word.key" />
+                                <Input v-if="word.used" @on-focus="focus(word.index)" 
+                                    @on-blur="blur(word.index)" placeholder="请输入该国际化文本的key" v-model="word.key" />
                             </p>
                         </li>
                     </ul>
                 </Col>
             </Row>
             <Row  :gutter="16">
-                <Col span="8">
-                    <Button long type="error" @click="reset">
-                        重输
+                <Col span="12">
+                    <Button long type="error" @click="goback">
+                        返回
                     </Button>
                 </Col>
-                <Col span="8">
+                <!-- <Col span="8">
                     <Button long @click="getKey">
                         生成未完成的KEY
                     </Button>
-                </Col>
-                <Col span="8">
+                </Col> -->
+                <Col span="12">
                     <Tooltip content="请输入所有国际化文本的key" v-if="!replaceDisable" style="width: 100%;">
                         <Button :disabled="true" long type="primary">
-                                    替换
+                            替换
                         </Button>
                     </Tooltip>
                     <Button v-else long type="primary" @click="replace">
@@ -61,7 +61,7 @@
         </template>
         <template v-else>
             <div class="inputCode">
-                <textarea placeholder="输入要提取国际化的页面代码" class="result" rows="40" cols="100" v-model="code"></textarea>
+                <textarea placeholder="输入要提取国际化的页面代码" class="content" rows="40" cols="100" v-model="code"></textarea>
                 <Button type="primary" @click="analyse" long>寻找中文字符</Button>
             </div>
         </template>
@@ -92,6 +92,15 @@
 
     .layout{
         display: flex;
+    }
+    .content{
+        height: calc(100vh - 65px);
+        padding: 5px;
+        margin: 5px 0;
+        border: 1px solid #dcdee2;
+        border-radius: 5px;
+        overflow: auto;
+        text-align: left;
     }
     .result{
         height: calc(100vh - 100px);
@@ -126,6 +135,21 @@
         color: red;
         font-weight: bold;
     }
+    .main >>> .heightlight.active{
+        text-shadow: 0 0 1px #ffa606;
+        animation: hue 2s infinite linear;
+    }
+    @keyframes hue {
+        10% {
+            color: red;
+        }
+        50% {
+            color: #ffa606;
+        }
+        90% {
+            color: red;
+        }
+    }
 </style>
 <script>
 import axios from 'axios'
@@ -156,6 +180,7 @@ export default {
                 return ''
             }
             let code = this.findWordArr.reduce((replaceCode, findWord, index)=>{
+                
                 if(!findWord.used){
                     if(replaceCode.indexOf(`${markString[0]}${findWord.index}${interpolationMark[0]}`) > -1){
                         let start = replaceCode.indexOf(`${markString[0]}${findWord.index}${interpolationMark[0]}`),
@@ -165,12 +190,29 @@ export default {
                     } else {
                         return replaceCode.replace(markString[0] + findWord.index + markString[1], findWord.originalCode)
                     }
+                } else {
+                    replaceCode = replaceCode.replace(markString[0] + findWord.index + markString[1], findWord.replaceCode)
                 }
                 return replaceCode
                     
             },this.replaceCode)
 
             return code
+        },
+        showReplaceCodeHTML(){
+
+            let div = document.createElement('div')
+            div.textContent = this.showReplaceCode
+            let html = div.innerHTML
+            html = this.findWordArr.reduce((html, word, index)=>{
+                return html.replace(`${markString[0]}${index}${markString[1]}`, `<span class="heightlight word${index}">$t(${index + 1})</span>`)
+                    .replace(`${markString[0]}${index}${interpolationMark[0]}`, `<span class="heightlight word${index}">$t(${index + 1}, [</span>`)
+                    .replace(`${interpolationMark[1]}${index}${interpolationMark[0]}`, `<span class="heightlight word${index}">,</span>`)
+                    .replace(`${interpolationMark[1]}${index}${markString[1]}`, `<span class="heightlight word${index}">])</span>`)
+            }, html)
+
+
+            return html
         },
         replaceDisable(){
             return this.findWordArr.reduce((bool, findWord)=>bool && (!findWord.used || findWord.key), true)
@@ -182,106 +224,12 @@ export default {
             this.replaceCode = ''
             this.resultCode = ''
         },
-        showReplaceCode(){
-            this.$nextTick(()=>{
-                if(!this.$refs.html){
-                    return
-                }
-                let html = this.$refs.html.innerHTML
-                html = this.findWordArr.reduce((html, word, index)=>{
-                    return html.replace(`${markString[0]}${index}${markString[1]}`, `<span class="heightlight">${markString[0]}${index}${markString[1]}</span>`)
-                        .replace(`${markString[0]}${index}${interpolationMark[0]}`, `<span class="heightlight">${markString[0]}${index}${interpolationMark[0]}</span>`)
-                        .replace(`${interpolationMark[1]}${index}${interpolationMark[0]}`, `<span class="heightlight">${interpolationMark[1]}${index}${interpolationMark[0]}</span>`)
-                        .replace(`${interpolationMark[1]}${index}${markString[1]}`, `<span class="heightlight">${interpolationMark[1]}${index}${markString[1]}</span>`)
-                }, html)
-
-                this.$refs.result.innerHTML = html
-            })
-        },
     },
     methods: {
         analyse(){
             function hit(code){
                 return /[\u4e00-\u9fa5]/.test(code)
             }
-
-            // function pushWord(code, word, arr, fn){
-            //     if(!fn){
-            //         fn = function(code, word, replace ){
-            //             return code.replace(word, replace)
-            //         }
-            //     }
-            //     let index = arr.length
-            //     arr.push({
-            //         index,
-            //         word,
-            //         originalCode: code,
-            //         key: '',
-            //         replaceCode: fn(code, word, '|' + index + '|'),
-            //         used: true,
-            //     })
-            //     return '||' + index + '||'
-            // }
-            // var words = []
-            // let replaceCode = this.code
-            // // 普通属性（"）
-            // .replace(/(?::?|v-?|v-bind:?|v-on:?|@?)[\w-]+="([^"]*)"|(?::?|v-?|v-bind:?|v-on:?|@?)[\w-]+='([^']*)'/g, function(code, str, str2, index){
-            //     let word = str || str2
-            //     if(code[0] == ':' || code.substr(0, 2) == 'v-' || code[0] == '@' || !hit(word)){
-            //         return code
-            //     }
-
-            //     return pushWord(code, word, words, function(code, word, replace){
-            //         return ':' + code.replace(word, replace)
-            //     })
-            // }).replace(/(?:>|\}{2})[\s\n\r\t]*?([^><\{{2}\}{2}]+)[\s\n\r\t]*?(?:<|\{{2})/g, function(code, str){
-            //     if(!hit(str)){
-            //         return code
-            //     }
-            //     return pushWord(code, str.trim(), words, function(code, word, replace){
-            //         return code.replace(word, '{{' + replace + '}}')
-            //     })
-            // }).replace(/('[^"']*?')|("[^"']*?")/ig, function(code, str, str2){
-            //     let word = str || str2
-            //     word = word.substr(1, word.length - 2)
-
-            //     if(!hit(word)){
-            //         return code
-            //     }
-            //     return pushWord(code, word, words, function(cord, word, replace){
-            //         return code.replace(str || str2,  replace)
-            //     })
-            // }).replace(/(`[^`]*?`)/ig, function(code, word){
-            //     word = word.substr(1, word.length - 2)
-            //     if(!hit(word)){
-            //         return code
-            //     }
-            //     var i = 0
-            //     let word2 = word.replace(/\$\{.*?\}/g, ()=>{
-            //         return `{${i++}}`
-            //     })
-
-            //     return pushWord(code, word2, words, function(cord, word, replace){
-            //         return replace
-            //     })
-            // })
-
-            // // 排序
-            // let findFoundWordRep = /\|\|(\d+)\|\|/g
-            // let sortArr = []
-
-            // for(let find = findFoundWordRep.exec(replaceCode); find; find = findFoundWordRep.exec(replaceCode)){
-            //     sortArr.push(parseInt(find[1]))
-            // }
-
-            // let sortMap = sortArr.reduce((_map, i, index)=>{
-            //     _map[i] = index
-            //     return _map
-            // },{})
-
-            // words.sort((item1, item2)=>{
-            //     return sortMap[item1.index] > sortMap[item2.index] ? 1 : -1
-            // })
 
             let result = vueCodeString.extractStringFromVue(this.code, {
                 filter: hit
@@ -298,44 +246,53 @@ export default {
         },
         replace(){
             let keyArr = []
+
+            let div = document.createElement('div')
+            div.textContent = this.showReplaceCode
+            let html = div.innerHTML
+
             this.resultCode = this.findWordArr.reduce((replaceCode, word, index)=>{
                 
                 if(!word.used){
-                    return replaceCode.replace(markString[0] + word.index + markString[1], word.originalCode)
+                    if(replaceCode.indexOf(`${markString[0]}${word.index}${interpolationMark[0]}`) > -1){
+                        let start = replaceCode.indexOf(`${markString[0]}${word.index}${interpolationMark[0]}`),
+                        end = replaceCode.indexOf(`${interpolationMark[1]}${word.index}${markString[1]}`) + `${markString[1]}${word.index}${interpolationMark[1]}`.length
+                    
+                        return replaceCode.substr(0, start) + word.originalCode + replaceCode.substr(end)
+                    } else {
+                        return replaceCode.replace(markString[0] + word.index + markString[1], word.originalCode)
+                    }
                 } else {
                     let key = getKeyName(this.pageName || '', word.key)
 
                     keyArr.push([key, word.word])
 
-                    let replacedStr = ''
-                    if(word.originalCode[0] == '\''){
-                        replacedStr = `$t('${key}')`
-                    } else if(word.originalCode[0] == '"'){
-                        replacedStr = `$t("${key}")`
-                    } else if(word.originalCode[0] == '`'){
+                    let quotationMarks = '\''
+                    let t = '$t'
+                    if(word.replaceType === 'vue-attr' && '\'' === word.quotationMarks){
+                        quotationMarks = '"'
+                    }
+                    if(word.replaceType === 'js'){
+                        t = 'this.$t'
+                    }
 
-                        let findRep = /\$\{(.*?)\}/g
-                        let findArr = []
-
-                        for(let find = findRep.exec(word.originalCode); find; find = findRep.exec(word.originalCode)){
-                            findArr.push(find[1])
-                        }
-                        replacedStr = `$t(\`${key}\`,[${findArr.join(',')}])`
-                    } else {
-                        replacedStr = word.originalCode.indexOf('"') >= word.originalCode.indexOf('\'') 
-                            ? `$t('${key}')` : `$t("${key}")`
-                    } 
-                    return replaceCode.replace('||' + word.index + '||',  word.replaceCode.replace('|' + word.index + '|', replacedStr))
+                    return replaceCode.replace(`${markString[0]}${index}${markString[1]}`, `<span class="heightlight">${t}(${quotationMarks}${word.key}${quotationMarks})</span>`)
+                        .replace(`${markString[0]}${index}${interpolationMark[0]}`, `<span class="heightlight">${t}(${quotationMarks}${word.key}${quotationMarks}, [</span>`)
+                        .replace(`${interpolationMark[1]}${index}${interpolationMark[0]}`, `<span class="heightlight">, </span>`)
+                        .replace(`${interpolationMark[1]}${index}${markString[1]}`, `<span class="heightlight">])</span>`)
                 }
-            }, this.replaceCode)
-            this.keyCode = keyArr.map(([key, value])=>`"${key}": "${value.replace(/[\n]/g, '')}"`).join(',\n')
+            }, html)
+
+            this.keyCode = keyArr.map(([key, value])=>`"${key}": "${value.replace(/[\n]/g, '')}"`).join(',\n    ')
         },
-        goback(){
+        goback2(){
             this.keyCode = ''
             this.resultCode = ''
         },
-        reset(){
-            this.code = ''
+        goback(){
+            
+            this.replaceCode = ''
+            this.findWordArr = []
         },
         async getKey(){
             try{
@@ -365,11 +322,24 @@ export default {
             }
              this.$Spin.hide();
         },
+        focus(index){
+            let word = document.querySelectorAll('.word' + index)
+            if(word.length){
+                word[0].scrollIntoView()
+                for(let i = 0; i < word.length; i++){
+                    word[i].classList.add('active')
+                }
+            }
+        },
+        blur(index){
+            let word = document.querySelectorAll('.word' + index)
+            if(word.length){
+                word[0].scrollIntoView()
+                for(let i = 0; i < word.length; i++){
+                    word[i].classList.remove('active')
+                }
+            }
+        },
     }
 }
-
-
-console.log('测试1')
-console.log(`测${ `测${1}试3` }试${ `测试4` }2`)
 </script>
-

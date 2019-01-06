@@ -246,7 +246,9 @@ describe('测试VueCodeString', ()=>{
             "originalCode": "'test'",
             "replaceCode": `${result.markString[0]}0${result.markString[1]}`,
             "word": "test",
-            type: 1,
+            type: 'string',
+            replaceType: 'vue-attr',
+            quotationMarks: '"'
         }])
     
         result = vueCodeString.extractStringFromVue(
@@ -257,13 +259,17 @@ describe('测试VueCodeString', ()=>{
             "originalCode": "'test'",
             "replaceCode": `${result.markString[0]}0${result.markString[1]}`,
             "word": "test",
-            type: 1,
+            type: 'string',
+            replaceType: 'vue-attr',
+            quotationMarks: '"'
         }, {
             "index": 1,
             "originalCode": '"test"',
             "replaceCode": `${result.markString[0]}1${result.markString[1]}`,
             "word": "test",
-            type: 1,
+            type: 'string',
+            replaceType: 'vue-attr',
+            quotationMarks: '\''
         }])
     
         result = vueCodeString.extractStringFromVue(
@@ -274,13 +280,17 @@ describe('测试VueCodeString', ()=>{
             "originalCode": '"test"',
             "replaceCode": `${result.markString[0]}0${result.markString[1]}`,
             "word": "test",
-            type: 1,
+            type: 'string',
+            replaceType: 'vue-attr',
+            quotationMarks: "'"
         }, {
             "index": 1,
             "originalCode": '"test"',
             "replaceCode": `${result.markString[0]}1${result.markString[1]}`,
             "word": "test",
-            type: 1,
+            type: 'string',
+            replaceType: 'vue-attr',
+            quotationMarks: "'"
         }])
     })
 
@@ -293,7 +303,8 @@ describe('测试VueCodeString', ()=>{
             "originalCode": 'id="te\'st"',
             "replaceCode": `:id='${result.markString[0]}0${result.markString[1]}'`,
             "word": "te'st",
-            type: 1,
+            type: 'string',
+            replaceType: 'attr',
         },])
 
         result = vueCodeString.extractStringFromVue(
@@ -304,13 +315,15 @@ describe('测试VueCodeString', ()=>{
             "originalCode": 'id="test"',
             "replaceCode": `:id='${result.markString[0]}0${result.markString[1]}'`,
             "word": "test",
-            type: 1,
+            type: 'string',
+            replaceType: 'attr',
         }, {
             "index": 1,
             "originalCode": "id='test'",
             "replaceCode": `:id="${result.markString[0]}1${result.markString[1]}"`,
             "word": "test",
-            type: 1,
+            type: 'string',
+            replaceType: 'attr',
         }])
     })
 
@@ -323,7 +336,8 @@ describe('测试VueCodeString', ()=>{
             "originalCode": 'test',
             "replaceCode": `{{${result.markString[0]}0${result.markString[1]}}}`,
             "word": "test",
-            type: 2,
+            type: 'string',
+            replaceType: 'template',
         },])
 
         result = vueCodeString.extractStringFromVue(
@@ -334,7 +348,8 @@ describe('测试VueCodeString', ()=>{
             "originalCode": 'test{{test',
             "replaceCode": `{{${result.markString[0]}0${result.markString[1]}}}`,
             "word": "test{{test",
-            type: 2,
+            type: 'string',
+            replaceType: 'template',
         }])
     })
 
@@ -347,7 +362,8 @@ describe('测试VueCodeString', ()=>{
             "originalCode": '\'test\'',
             "replaceCode": `${result.markString[0]}0${result.markString[1]}`,
             "word": "test",
-            type: 2,
+            type: 'string',
+            replaceType: 'vue-template',
         },])
 
         result = vueCodeString.extractStringFromVue(
@@ -358,13 +374,15 @@ describe('测试VueCodeString', ()=>{
             "originalCode": 'test',
             "replaceCode": `{{${result.markString[0]}0${result.markString[1]}}}`,
             "word": "test",
-            type: 2,
+            type: 'string',
+            replaceType: 'template',
         },{
             "index": 1,
             "originalCode": '\'test\'',
             "replaceCode": `${result.markString[0]}1${result.markString[1]}`,
             "word": "test",
-            type: 2,
+            type: 'string',
+            replaceType: 'vue-template',
         },])
 
         result = vueCodeString.extractStringFromVue(
@@ -376,19 +394,22 @@ describe('测试VueCodeString', ()=>{
             "originalCode": 'test',
             "replaceCode": `{{${result.markString[0]}0${result.markString[1]}}}`,
             "word": "test",
-            type: 2,
+            type: 'string',
+            replaceType: 'template',
         },{
             "index": 1,
             "originalCode": "'test'",
             "replaceCode": `${result.markString[0]}1${result.markString[1]}`,
             "word": "test",
-            type: 2,
+            type: 'string',
+            replaceType: 'vue-template',
         },{
             "index": 2,
             "originalCode": '{{test',
             "replaceCode": `{{${result.markString[0]}2${result.markString[1]}}}`,
             "word": "{{test",
-            type: 2,
+            type: 'string',
+            replaceType: 'template',
         }])
 
         result = vueCodeString.extractStringFromVue(
@@ -400,19 +421,22 @@ describe('测试VueCodeString', ()=>{
             "originalCode": 'test',
             "replaceCode": `{{${result.markString[0]}0${result.markString[1]}}}`,
             "word": "test",
-            type: 2,
+            type: 'string',
+            replaceType: 'template',
         },{
             "index": 1,
             "originalCode": "'test'",
             "replaceCode": `${result.markString[0]}1${result.markString[1]}`,
             "word": "test",
-            type: 2,
+            type: 'string',
+            replaceType: 'vue-template',
         },{
             "index": 2,
             "originalCode": 'xx{{test',
             "replaceCode": `{{${result.markString[0]}2${result.markString[1]}}}`,
             "word": "xx{{test",
-            type: 2,
+            type: 'string',
+            replaceType: 'template',
         }])
     })
 
@@ -426,13 +450,15 @@ describe('测试VueCodeString', ()=>{
             "originalCode": '\'test\'',
             "replaceCode": `${result.markString[0]}0${result.markString[1]}`,
             "word": "test",
-            type: 2,
+            type: 'string',
+            replaceType: 'vue-template',
         },{
             "index": 1,
             "originalCode": '\'test\'',
             "replaceCode": `${result.markString[0]}1${result.markString[1]}`,
             "word": "test",
-            type: 0,
+            type: 'string',
+            replaceType: 'js',
         },])
 
     })

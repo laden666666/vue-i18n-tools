@@ -210,7 +210,8 @@ export default {
                         replaceCode: replaceString,
                         originalCode: jsCode.substring(start, end) ,
                         word: item.item.value,
-                        type: 0,
+                        type: 'string',
+                        replaceType: 'js',
                     })
                     jsCode = jsCode.substring(0, start) +  replaceString + jsCode.substring(end)
                     codeLengthChange += item.item.start - item.item.end + replaceString.length 
@@ -224,7 +225,8 @@ export default {
                         replaceCode: replaceString,
                         originalCode: jsCode.substring(start, end) ,
                         word: item.item.value.cooked,
-                        type: 0,
+                        type: 'string',
+                        replaceType: 'js',
                     })
                     jsCode = jsCode.substring(0, start) +  replaceString + jsCode.substring(end)
                     codeLengthChange += item.item.start - item.item.end - 2 + replaceString.length 
@@ -249,7 +251,8 @@ export default {
                             replaceCode: '',
                             originalCode: '',
                             word: item.value,
-                            type: 0,
+                            type: 'template',
+                            replaceType: 'js',
                         }
                     }
                     codeLengthChange += item.item.start - item.item.end - 3 + replaceString.length 

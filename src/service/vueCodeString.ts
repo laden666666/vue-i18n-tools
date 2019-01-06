@@ -70,8 +70,12 @@ export default {
                                     })
                                     if(result.extractString.length > 0) {
                                         let _extractStrings = []
-                                        result.extractString.forEach((item, index) => {
-                                            let extractString: ExtractString = {...item, type: 1}
+                                        result.extractString.forEach((_item, index) => {
+                                            let extractString: ExtractString = {
+                                                ..._item, 
+                                                replaceType: 'vue-attr',
+                                                quotationMarks: item.quotationMarks
+                                            }
                                             _extractStrings.push(extractString)
                                         })
     
@@ -94,7 +98,8 @@ export default {
                                     originalCode: item.code.trim(),
                                     replaceCode: `:${item.name}=${quotationMarks}${replaceCode}${quotationMarks}`,
                                     word: item.value,
-                                    type: 1,
+                                    type: 'string',
+                                    replaceType: 'attr'
                                 }
 
                                 extractStrings.push(extractString)
@@ -137,7 +142,10 @@ export default {
                                     if(result.extractString.length > 0) {
                                         let _extractStrings = []
                                         result.extractString.forEach((item, index) => {
-                                            let extractString: ExtractString = {...item, type: 2}
+                                            let extractString: ExtractString = {
+                                                ...item, 
+                                                replaceType: 'vue-template'
+                                            }
                                             _extractStrings.push(extractString)
                                         })
     
@@ -171,8 +179,9 @@ export default {
                                 index: extractStrings.length,
                                 originalCode: code,
                                 replaceCode: `{{${replaceCode}}}`,
-                                word: code,
-                                type: 2,
+                                word: code.trim(),
+                                type: 'string',
+                                replaceType: 'template'
                             }
     
                             extractStrings.push(extractString)

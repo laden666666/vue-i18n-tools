@@ -154,8 +154,9 @@ export function parseHTML (html: string, options: ParseHTMLOptions) {
 
                     // 跳过
                     if (commentEnd >= 0) {
-                        
-                        options.comment(html.substring(4, commentEnd))
+                        if(typeof options.comment === 'function'){
+                            options.comment(html.substring(4, commentEnd))
+                        }
 
                         // 越过注释
                         advance(commentEnd + 3)

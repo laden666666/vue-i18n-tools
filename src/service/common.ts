@@ -19,7 +19,7 @@ export type ExtractStringResult = {
     extractString: ExtractString[]
 }
 
-export type ExtractString = {
+interface BaseExtractString {
     // 显示的序号
     index: number,
     // 原始的字符串
@@ -28,6 +28,18 @@ export type ExtractString = {
     replaceCode: string,
     // 替换部分的字符串
     word: string,
-    // 类型： 0 js 1 属性 2 内容
-    type: number
+    // 字符串类型
+    type: 'string' | 'template'
+    // 替换类型'js' | 'attr' | 'vue-attr' | 'vue-template' | 'template'
+    replaceType: string
 }
+
+interface OtherExtractString extends BaseExtractString {
+    replaceType: 'js' | 'attr' | 'vue-template' | 'template'
+}
+interface AttrExtractString extends BaseExtractString{
+    replaceType: 'vue-attr',
+    quotationMarks: string,
+}
+
+export type ExtractString = OtherExtractString | AttrExtractString
