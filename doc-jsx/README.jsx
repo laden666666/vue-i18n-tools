@@ -1,6 +1,6 @@
 <doc>
     <h1>vue-i18n-tools</h1>
-    <p>一个vue的模板提取中文文本的工具，用于做国际化提取文本——<a href="vue-i18n-tools">vue-i18n-tools。</a></p>
+    <p>一个vue的模板提取中文文本的工具，用于做国际化提取文本——<a href="https://laden666666.github.io/vue-i18n-tools/">vue-i18n-tools。</a></p>
 
     <h2>使用教程</h2>
 

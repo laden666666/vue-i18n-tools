@@ -1,7 +1,7 @@
 
 # vue-i18n-tools
 
-一个vue的模板提取中文文本的工具，用于做国际化提取文本——[vue-i18n-tools。](vue-i18n-tools "") 
+一个vue的模板提取中文文本的工具，用于做国际化提取文本——[vue-i18n-tools。](https://laden666666.github.io/vue-i18n-tools/ "") 
 
 
 ## 使用教程
