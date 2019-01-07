@@ -22,7 +22,7 @@
 
 ### 设置vue-i18n的key
 
-未选择好的国际化的文本设置key。
+为选择好的国际化文本设置vue-i18n的key。
 
 ![Alt](./doc-jsx/GIF3.gif)
 
