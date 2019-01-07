@@ -1,6 +1,6 @@
 <doc>
     <h1>vue-i18n-tools</h1>
-    <p>一个vue的模板提取中文文本的工具，用于做国际化提取文本——vue-i18n-tools。</p>
+    <p>一个vue的模板提取中文文本的工具，用于做国际化提取文本——<a href="vue-i18n-tools">vue-i18n-tools。</a></p>
 
     <h2>使用教程</h2>
 
@@ -13,7 +13,7 @@
     <img src="./doc-jsx/GIF2.gif"></img>
 
     <h3>设置vue-i18n的key</h3>
-    <p>未选择好的国际化的文本设置key。</p>
+    <p>为选择好的国际化文本设置vue-i18n的key。</p>
     <img src="./doc-jsx/GIF3.gif"></img>
 
     <h3>生成国际化文件和国际化后的vue源码</h3>

@@ -1,7 +1,7 @@
 
 # vue-i18n-tools
 
-一个vue的模板提取中文文本的工具，用于做国际化提取文本——vue-i18n-tools。
+一个vue的模板提取中文文本的工具，用于做国际化提取文本——[vue-i18n-tools。](vue-i18n-tools "") 
 
 
 ## 使用教程
@@ -22,7 +22,7 @@
 
 ### 设置vue-i18n的key
 
-未选择好的国际化的文本设置key。
+为选择好的国际化文本设置vue-i18n的key。
 
 ![Alt](./doc-jsx/GIF3.gif)
 
