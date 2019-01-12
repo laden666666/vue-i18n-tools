@@ -71,7 +71,7 @@
     .main{
         padding: 10px;
         width: calc(100vw - 20px);
-        height: 100vh;
+        height: calc(100vh - 52px);
         box-sizing: border-box;
         margin: 0 auto;
     }
@@ -94,7 +94,7 @@
         display: flex;
     }
     .content{
-        height: calc(100vh - 65px);
+        height: calc(100vh - 42px - 65px);
         padding: 5px;
         margin: 5px 0;
         border: 1px solid #dcdee2;
@@ -103,7 +103,7 @@
         text-align: left;
     }
     .result{
-        height: calc(100vh - 100px);
+        height: calc(100vh - 42px - 100px);
         padding: 5px;
         margin: 5px 0;
         border: 1px solid #dcdee2;
@@ -113,7 +113,7 @@
     }
     .word-list{
         list-style: none;
-        height: calc(100vh - 100px);
+        height: calc(100vh - 42px - 100px);
         padding: 5px;
         margin: 5px 0;
         border: 1px solid #dcdee2;
